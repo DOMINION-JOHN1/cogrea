@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "project-cogrea-one",
+  "private_key_id": "8de08a408e7a24fdc53513677f657aa3117b6a06",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQDQDrTO+6tmsYMF\nUYvXszE4dyXS76xu+gOkbnjzWtVfT8whDwJCXMhaqi9hBhEvnHalamu73HtGVEbP\nA0HqUt5JUWUXqeHb/NvISGltG1rxlkhp9d96DJE4LdvBrnlSECU3yRo/1eEZqhbh\n+KoUIx71E9IB1/OH+bBrveuWz1XkzvE5+40MYhJuyZ/neLMqx50SMA6/uPDwLP7Y\nbDtm1COtR3pJu8y2u3GdNHD5HDiQGPqHSudWXNyCjc/B9PIe98S5y8dEanmocAtL\ne8rlg75yOVGyzy/I2V+5/B2fV8OPg6McYwiOxMW0gVrfstxIz9V1rgH70xsJaRD9\nGidb00T3AgMBAAECggEAJrxOMmkNsMlkzNUxVX/hrpMUQjDoKCM5EWCV+SzUo/Gd\n3hvGvmc60BJ2TriL85LMTiDBnRDADMh9BGalW4SBKSJT0XOJ/uSVYLUGl88rf+YM\nZlnl+PmlAdIb43Ph14L1Au1Yi0D9L0OJDho3RBeD2HoPs9MqXosAqxaJaaMBaV89\n/W14nlTr14BHbVmS5RryhjSCpGwsF4mTaRbCnZbUFAto60BH7UPKh+x/uAfz4YsS\nlW6hRbELBoUhWotLYAvqYCeXmkshECqWaJ5A31sj9XDNQKcY4uyo56Tkkcls7+xh\n1/6SdncktHRxzcMDfclAIyG/GM0dzp454OAies9h2QKBgQDp/W8X0xB/qt/76OeA\n9kOrH4oSsCjICpZYhCDrDSdPfADQuIwmbIHylw4CW/7+yqKVZkzj02gQAK4wdl1A\nEENqAcWx+f83Ewr6esqPk1zWhxBBLCKwxanpKwHCVcns79gm/WX6Fe3D5gTu5gRp\nFAcv3MpKo5kmWvB6YXaAR1q47wKBgQDjoM6sTaCgTLeHZ7FNbJyK6tUMWp278s2R\nk1ld6u2NRM9ClsCdPwQinnt0Z2N+M3eL3Bi34PHTUyfvnhOMWO3lfxJJ6dwD4CWj\ncoFM/sCLG3loR7kwV/gA2+tskmkoqaZu7TPJVAlzzhAyOzAjkQA0y5JWI3cSPSbe\nBnbBnJPkeQKBgQC0131z4VlgAlWIITJDFpGoAQE6flGWgbA/CydR4uGd6c3LgsY2\nsCgisKJQKn/CtiO/6cfFUM+dhpkZtXFOoQMpO+NqMTgRfbM/cYV6P79BwjNK22yY\nSLyQDAAZDSq554icYb3d8fLIM89eQAHqoGMJl8/0rcogvaocO5VVgVBZmwKBgHcC\nJAvBqjEk6u9IL1KjblTS4gBLgBw7nW5280o/AWPSjenql1mfELJo2XLKeyIIFoBw\n2huI5+Xsm/yTUPUXqYlLHmy2b+k2z3bc7u0qY9BW1OrIVPIJjAgm8rcY9RHlYLau\nHV0tKqP5IE6i01BFBy6TIDcY47ANeLyr9HrVOh1BAoGBAK9W1ptYX/HlylMeFidt\naUxJVoSY4PQURm9iSNQHnzJAMGqZpAB9axep5BVLejhTyuvLWjFxqew2sJh6j3Jx\naxLZkWNhTnA1P19D7nQWga93v6Xfag4NzysHC3d8ndw+0eI5Ot79S9/W07YGH9ec\ndQh9wC1jR1ZNFr5jxbSm7r32\n-----END PRIVATE KEY-----\n",
+  "client_email": "ai-backend-service@project-cogrea-one.iam.gserviceaccount.com",
+  "client_id": "110456343548893730535",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/ai-backend-service%40project-cogrea-one.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}
