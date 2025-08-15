@@ -1,0 +1,13 @@
+﻿fastapi
+uvicorn
+python-dotenv
+groq
+elevenlabs
+langchain
+langchain-google-genai
+langchain-community
+langgraph
+redis
+pydantic
+python-multipart
+langchain_tavily
