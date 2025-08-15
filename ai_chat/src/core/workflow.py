@@ -6,6 +6,7 @@ from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_core.runnables import RunnableConfig
 from langgraph.prebuilt import ToolNode, tools_condition
 from config import REDIS_HOST, REDIS_PASSWORD,llm, tavily_tool , REDIS_URL
+from .custom_checkpointer import CustomRedisCheckpointer
 
 # Define the state for our conversation
 class AgentState(TypedDict):
@@ -45,28 +46,29 @@ def call_model(state: AgentState, config: RunnableConfig):
     return {"messages": [response]}
 
 def build_workflow():
-    # Create a new workflow
     builder = StateGraph(AgentState)
     
-    # Add the model node
+    # Add the model node (unchanged)
     builder.add_node("call_model", call_model)
-    builder.add_node("research_assistant", ToolNode([tavily_tool]))
-
+    
+    # Rename this node to "tools" to match tools_condition's default branch
+    builder.add_node("tools", ToolNode([tavily_tool]))
+    
+    # Conditional edges from call_model (unchanged; now points to "tools" or "__end__")
     builder.add_conditional_edges(
         "call_model",
         tools_condition,
     )
-
-    builder.add_edge("tools", "chatbot")
-    builder.add_edge(START,"call_model")
-   
     
-    # Set up Redis checkpointing
-    with RedisSaver.from_conn_string(REDIS_URL) as checkpointer:
-        checkpointer.setup()
-        # Compile the graph with the Redis checkpointer
-        return builder.compile(checkpointer=checkpointer)
-
+    # After tools are invoked, route back to call_model (fix the previous typo; no "chatbot" node exists)
+    builder.add_edge("tools", "call_model")
+    
+    # Start at call_model (unchanged)
+    builder.add_edge(START, "call_model")
+    
+    # Use the custom checkpointer (unchanged)
+    checkpointer = CustomRedisCheckpointer()
+    return builder.compile(checkpointer=checkpointer)
 # Create the workflow instance
 workflow = build_workflow()
 
