@@ -69,6 +69,7 @@ def build_workflow():
     # Use the custom checkpointer (unchanged)
     checkpointer = CustomRedisCheckpointer()
     return builder.compile(checkpointer=checkpointer)
+
 # Create the workflow instance
 workflow = build_workflow()
 
@@ -81,16 +82,33 @@ def process_message(session_id: str, user_message: str) -> str:
     }
     
     # Create a human message from the user input
-    message = HumanMessage(content=user_message)
+    new_message = HumanMessage(content=user_message)
     
-    # Invoke the workflow to get the response
-    result = workflow.invoke(
-        {"messages": [message]},
-        config
-    )
-    
-    # Get the last message (AI's response)
-    if result["messages"] and hasattr(result["messages"][-1], 'content'):
-        return result["messages"][-1].content
+    # Use stream instead of invoke to better handle state updates
+    try:
+        # Stream the workflow to get the response
+        events = list(workflow.stream(
+            {"messages": [new_message]},
+            config,
+            stream_mode="values"
+        ))
+        
+        # Get the final state
+        if events:
+            final_state = events[-1]
+            if final_state and "messages" in final_state:
+                messages = final_state["messages"]
+                if messages and hasattr(messages[-1], 'content'):
+                    return messages[-1].content
+    except Exception as e:
+        print(f"Error in workflow stream: {e}")
+        
+        # Fallback: try with invoke
+        try:
+            result = workflow.invoke({"messages": [new_message]}, config)
+            if result["messages"] and hasattr(result["messages"][-1], 'content'):
+                return result["messages"][-1].content
+        except Exception as e2:
+            print(f"Error in workflow invoke: {e2}")
     
     return "I'm sorry, I couldn't generate a response. Please try again."
