@@ -37,17 +37,23 @@ class CustomRedisCheckpointer(BaseCheckpointSaver):
         thread_id = config['configurable']['thread_id']
         checkpoint_ts = config['configurable'].get('thread_ts')
         
+        print(f"CHECKPOINTER DEBUG: Getting tuple for thread {thread_id}, ts {checkpoint_ts}")
+        
         if not checkpoint_ts:
             # Get latest if no specific timestamp
             ids_key = self.get_checkpoint_ids_key(thread_id)
             checkpoint_timestamps = self.redis.lrange(ids_key, -1, -1)
+            print(f"CHECKPOINTER DEBUG: Found {len(checkpoint_timestamps)} timestamps for thread")
             if not checkpoint_timestamps:
+                print("CHECKPOINTER DEBUG: No timestamps found, returning None")
                 return None
             checkpoint_ts = checkpoint_timestamps[0].decode('utf-8')
+            print(f"CHECKPOINTER DEBUG: Using latest timestamp: {checkpoint_ts}")
         
         key = self.get_checkpoint_key(thread_id, checkpoint_ts)
         data = self.redis.get(key)
         if not data:
+            print(f"CHECKPOINTER DEBUG: No data found for key: {key}")
             return None
         
         try:
@@ -56,11 +62,25 @@ class CustomRedisCheckpointer(BaseCheckpointSaver):
             # Debug logging to see what we're trying to deserialize
             checkpoint_data = saved.get('checkpoint')
             if not checkpoint_data:
-                print(f"Empty checkpoint data for key: {key}")
+                print(f"CHECKPOINTER DEBUG: Empty checkpoint data for key: {key}")
                 return None
             
-            # The checkpoint data is already serialized by serde.dumps, so we need to deserialize it
-            checkpoint = self.serde.loads(checkpoint_data)
+            print(f"CHECKPOINTER DEBUG: Checkpoint data type: {type(checkpoint_data)}")
+            
+            # Handle both string and bytes checkpoint data
+            if isinstance(checkpoint_data, str):
+                # If it's base64 encoded bytes, decode it first
+                try:
+                    checkpoint_bytes = base64.b64decode(checkpoint_data)
+                    checkpoint = self.serde.loads(checkpoint_bytes)
+                except:
+                    # If base64 decode fails, treat it as direct string
+                    checkpoint = self.serde.loads(checkpoint_data)
+            else:
+                checkpoint = self.serde.loads(checkpoint_data)
+            
+            print(f"CHECKPOINTER DEBUG: Successfully loaded checkpoint with keys: {checkpoint.keys() if isinstance(checkpoint, dict) else 'not a dict'}")
+            
             metadata = saved.get('metadata', {})
             parent_ts = saved.get('parent_ts')
             
@@ -68,16 +88,19 @@ class CustomRedisCheckpointer(BaseCheckpointSaver):
             if parent_ts:
                 parent_config = {'configurable': {'thread_id': thread_id, 'thread_ts': parent_ts}}
             
-            return CheckpointTuple(
+            result = CheckpointTuple(
                 config=config,
                 checkpoint=checkpoint,
                 metadata=metadata,
                 parent_config=parent_config,
             )
             
+            print(f"CHECKPOINTER DEBUG: Returning checkpoint tuple")
+            return result
+            
         except (json.JSONDecodeError, KeyError, Exception) as e:
-            print(f"Error parsing checkpoint data for key {key}: {e}")
-            print(f"Raw data: {data[:100] if data else 'None'}...")
+            print(f"CHECKPOINTER DEBUG: Error parsing checkpoint data for key {key}: {e}")
+            print(f"CHECKPOINTER DEBUG: Raw data: {data[:100] if data else 'None'}...")
             # If we can't parse the checkpoint, return None to create a fresh one
             return None
     
@@ -95,6 +118,8 @@ class CustomRedisCheckpointer(BaseCheckpointSaver):
         # Use the checkpoint timestamp as the unique identifier
         checkpoint_ts = checkpoint['ts']
         
+        print(f"CHECKPOINTER DEBUG: Storing checkpoint for thread {thread_id}, ts {checkpoint_ts}")
+        
         # Safely extract parent timestamp
         parent_ts = None
         if parent_config and isinstance(parent_config, dict):
@@ -108,15 +133,26 @@ class CustomRedisCheckpointer(BaseCheckpointSaver):
         # Serialize the checkpoint data
         try:
             serialized_checkpoint = self.serde.dumps(checkpoint)
+            print(f"CHECKPOINTER DEBUG: Serialized checkpoint type: {type(serialized_checkpoint)}")
+            print(f"CHECKPOINTER DEBUG: Serialized checkpoint length: {len(serialized_checkpoint)}")
+            
+            # Handle different serialization formats
+            if isinstance(serialized_checkpoint, bytes):
+                # Convert bytes to base64 string for JSON storage
+                checkpoint_data = base64.b64encode(serialized_checkpoint).decode('utf-8')
+            else:
+                # Already a string
+                checkpoint_data = serialized_checkpoint
             
             data = {
-                'checkpoint': serialized_checkpoint,
+                'checkpoint': checkpoint_data,
                 'metadata': metadata,
                 'parent_ts': parent_ts,
             }
             
-            # Store in Redis
-            self.redis.set(key, json.dumps(data, cls=CustomJSONEncoder))
+            # Store in Redis using standard json.dumps (no CustomJSONEncoder needed now)
+            self.redis.set(key, json.dumps(data))
+            print(f"CHECKPOINTER DEBUG: Successfully stored checkpoint with key: {key}")
             
             # Store the timestamp in the ordered list
             ids_key = self.get_checkpoint_ids_key(thread_id)
@@ -130,8 +166,8 @@ class CustomRedisCheckpointer(BaseCheckpointSaver):
             }
             
         except Exception as e:
-            print(f"Error storing checkpoint: {e}")
-            print(f"Checkpoint data: {checkpoint}")
+            print(f"CHECKPOINTER DEBUG: Error storing checkpoint: {e}")
+            print(f"CHECKPOINTER DEBUG: Checkpoint data: {checkpoint}")
             raise
     
     def put_writes(self, config: RunnableConfig, writes: Sequence[tuple], task_id: str) -> None:
@@ -152,12 +188,20 @@ class CustomRedisCheckpointer(BaseCheckpointSaver):
         # Serialize writes
         writes_data = []
         for channel, value in writes:
+            serialized_value = None
+            if value is not None:
+                serialized_value = self.serde.dumps(value)
+                # Handle bytes in writes too
+                if isinstance(serialized_value, bytes):
+                    serialized_value = base64.b64encode(serialized_value).decode('utf-8')
+            
             writes_data.append({
                 'channel': channel,
-                'value': self.serde.dumps(value) if value is not None else None
+                'value': serialized_value
             })
         
-        self.redis.set(writes_key, json.dumps(writes_data, cls=CustomJSONEncoder))
+        # Use standard json.dumps since we've handled bytes conversion above
+        self.redis.set(writes_key, json.dumps(writes_data))
         
         # Also maintain a list of task_ids for this checkpoint
         task_ids_key = f"{self.get_writes_key(thread_id, checkpoint_ts)}:task_ids"

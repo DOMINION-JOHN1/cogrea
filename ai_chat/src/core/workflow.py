@@ -81,34 +81,64 @@ def process_message(session_id: str, user_message: str) -> str:
         }
     }
     
+    print(f"DEBUG: Processing message for session {session_id}")
+    print(f"DEBUG: User message: {user_message}")
+    
+    # Check current state before processing
+    try:
+        current_state = workflow.get_state(config)
+        print(f"DEBUG: Current state exists: {current_state is not None}")
+        if current_state and hasattr(current_state, 'values') and current_state.values:
+            print(f"DEBUG: Current state values: {current_state.values}")
+            if "messages" in current_state.values:
+                existing_messages = current_state.values["messages"]
+                print(f"DEBUG: Found {len(existing_messages)} existing messages")
+                for i, msg in enumerate(existing_messages):
+                    print(f"DEBUG: Message {i}: {type(msg).__name__} - {msg.content[:100]}...")
+            else:
+                print("DEBUG: No 'messages' key in current state")
+        else:
+            print("DEBUG: No current state or state values")
+    except Exception as e:
+        print(f"DEBUG: Error getting current state: {e}")
+    
     # Create a human message from the user input
     new_message = HumanMessage(content=user_message)
     
-    # Use stream instead of invoke to better handle state updates
+    # Use stream to process the message
     try:
-        # Stream the workflow to get the response
+        print("DEBUG: Starting workflow stream...")
         events = list(workflow.stream(
             {"messages": [new_message]},
             config,
             stream_mode="values"
         ))
         
+        print(f"DEBUG: Got {len(events)} events from stream")
+        
         # Get the final state
         if events:
             final_state = events[-1]
+            print(f"DEBUG: Final state: {final_state}")
             if final_state and "messages" in final_state:
                 messages = final_state["messages"]
+                print(f"DEBUG: Final state has {len(messages)} messages")
                 if messages and hasattr(messages[-1], 'content'):
-                    return messages[-1].content
+                    response_content = messages[-1].content
+                    print(f"DEBUG: Response: {response_content}")
+                    
+                    # Check state after processing
+                    try:
+                        post_state = workflow.get_state(config)
+                        if post_state and hasattr(post_state, 'values') and post_state.values:
+                            print(f"DEBUG: Post-processing state has {len(post_state.values.get('messages', []))} messages")
+                    except Exception as e:
+                        print(f"DEBUG: Error checking post-processing state: {e}")
+                    
+                    return response_content
     except Exception as e:
-        print(f"Error in workflow stream: {e}")
-        
-        # Fallback: try with invoke
-        try:
-            result = workflow.invoke({"messages": [new_message]}, config)
-            if result["messages"] and hasattr(result["messages"][-1], 'content'):
-                return result["messages"][-1].content
-        except Exception as e2:
-            print(f"Error in workflow invoke: {e2}")
+        print(f"DEBUG: Error in workflow stream: {e}")
+        import traceback
+        traceback.print_exc()
     
     return "I'm sorry, I couldn't generate a response. Please try again."
