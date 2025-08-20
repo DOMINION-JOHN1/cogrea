@@ -1,4 +1,3 @@
-import uuid
 import logging
 from fastapi import APIRouter, UploadFile, File, Form, HTTPException
 from fastapi.responses import JSONResponse, FileResponse

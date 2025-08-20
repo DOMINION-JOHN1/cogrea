@@ -1,27 +1,19 @@
-from typing import Dict, List, TypedDict, Annotated, Sequence
-from langgraph.graph import StateGraph, START, END
-from langgraph.checkpoint.redis import RedisSaver
-from langchain_core.messages import BaseMessage, HumanMessage, AIMessage
+from typing import TypedDict, Annotated, Sequence
+from langgraph.graph import StateGraph, START
+from langchain_core.messages import BaseMessage, HumanMessage
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_core.runnables import RunnableConfig
 from langgraph.prebuilt import ToolNode, tools_condition
-from config import REDIS_HOST, REDIS_PASSWORD,llm, tavily_tool , REDIS_URL
+from config import llm, tavily_tool
 from .custom_checkpointer import CustomRedisCheckpointer
+from prompts.prompts import system_prompt
 
 # Define the state for our conversation
 class AgentState(TypedDict):
     messages: Annotated[Sequence[BaseMessage], lambda a, b: a + b]
 
-# System prompt that defines the AI's role and capabilities
-SYSTEM_PROMPT = """You are Cogrea, a helpful AI assistant. You are knowledgeable about career guidance, 
-learning paths, and scheduling. You can help users with:
-- Career advice and exploration
-- Learning path recommendations
-- Study and work scheduling
-- Answering questions about various topics
-
-Be professional, supportive, and provide actionable advice. If you need more information to help effectively, 
-don't hesitate to ask clarifying questions."""
+# System prompt imported from prompts.py
+SYSTEM_PROMPT = system_prompt
 
 def get_conversation_chain():
     # Initialize the prompt with system message and chat history

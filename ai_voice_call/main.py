@@ -1,20 +1,17 @@
-
-from google.genai.types import Modality
-from google.genai.types import RealtimeInputConfig, AutomaticActivityDetection, StartSensitivity, EndSensitivity, SpeechConfig, VoiceConfig, PrebuiltVoiceConfig
-import asyncio
-from google.genai import types
-from google import genai
-from google.genai.types import HttpOptions
-import os
-from dotenv import load_dotenv
 import asyncio
 import io
-from pathlib import Path
+import os
 import wave
-from google import genai
-from google.genai import types
+from pathlib import Path
+from dotenv import load_dotenv
 import soundfile as sf
 import librosa
+from google import genai
+from google.genai import types
+from google.genai.types import (
+    Modality, RealtimeInputConfig, AutomaticActivityDetection, 
+    StartSensitivity, EndSensitivity, SpeechConfig, VoiceConfig, PrebuiltVoiceConfig
+)
 
 load_dotenv()
 

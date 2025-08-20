@@ -1,13 +1,21 @@
-﻿fastapi
+# Core web framework
+fastapi
 uvicorn
+python-multipart
+
+# Environment and configuration
 python-dotenv
+
+# AI and LLM services
 groq
 elevenlabs
 langchain
 langchain-google-genai
-langchain-community
 langgraph
+langchain-tavily
+
+# Database and caching
 redis
+
+# Data validation
 pydantic
-python-multipart
-langchain_tavily

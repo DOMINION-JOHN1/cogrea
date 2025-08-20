@@ -1,0 +1,20 @@
+# Voice call specific dependencies
+fastapi
+uvicorn
+python-dotenv
+
+# Google AI services
+google-generativeai
+
+# Audio processing
+soundfile
+librosa
+
+# Flask-based voice app dependencies
+flask
+flask-sock
+google-cloud-aiplatform
+
+# WebSocket and async support
+gevent
+geventwebsocket
