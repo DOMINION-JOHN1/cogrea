@@ -113,8 +113,8 @@ async def process_voice_response(
         logger.error(f"Voice processing error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/evaluate_interview/{session_id}")
-async def evaluate_interview(session_id: str):
+@router.post("/history/{session_id}")
+async def get_history(session_id: str):
     if not session_id or not isinstance(session_id, str) or not session_id.strip():
         raise HTTPException(status_code=400, detail="Invalid or missing session_id")
     try:
